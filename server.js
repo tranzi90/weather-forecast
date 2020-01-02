@@ -1,6 +1,8 @@
 const express = require('express');
 const hbs = require('hbs');
 const fs = require('fs');
+const geocode = require('./utils/geocode');
+const weather = require('./utils/weather');
 
 const port = process.env.PORT || 3000;
 var app = express();
@@ -14,14 +16,10 @@ app.use((req, res, next) => {
     console.log(log);
     fs.appendFile('server.log', log + '\n', (err) => {
         if (err)
-            console.log('Все хуйово');
+            console.log('Все х**ово');
     });
     next();
 });
-
-// app.use((req, res, next) => {
-//     res.render('maintenance.hbs');
-// });
 
 app.use(express.static(__dirname + '/public'));
 
@@ -36,7 +34,7 @@ hbs.registerHelper('screamIt', (text) => {
 app.get('/', (req, res) => {
     res.render('home.hbs', {
         pageTitle: 'Home Page',
-        welcomeMessage: 'welcome bleat\''
+        welcomeMessage: 'welcome!'
     });
 });
 
@@ -46,18 +44,28 @@ app.get('/about', (req, res) => {
     });
 });
 
-app.get('/projects', (req, res) => {
-    res.render('projects.hbs', {
-        pageTitle: 'Projects Page'
-    });
-});
+app.get('/weather', (req, res) => {
+    if (!req.query.address)
+        return res.send({error: 'нужен адрес!'});
 
-app.get('/bad', (req, res) => {
-    res.send({
-        errorMessage: '404 pidarashka'
+    geocode(req.query.address, (errorMessage, results) => {
+        if (errorMessage)
+            res.send({error: errorMessage});
+        else {
+            weather(results.Latitude, results.Longitude, (errorMessage, weatherResults) => {
+                if (errorMessage)
+                    res.send(errorMessage);
+                else {
+                    res.send({
+                        forecast: weatherResults,
+                        location: results.Address
+                    });
+                }
+            });
+        }
     });
 });
 
 app.listen(port, () => {
-    console.log(`Серв ебашит на ${port} порту епте!!!!!!!11`);
+    console.log(`Серв на ${port} порту!!!!!!!11`);
 });
