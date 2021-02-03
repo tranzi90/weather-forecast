@@ -16,7 +16,7 @@ app.use((req, res, next) => {
     console.log(log);
     fs.appendFile('server.log', log + '\n', (err) => {
         if (err)
-            console.log('Все х**ово');
+            console.log('Не удалось записать логи в файл');
     });
     next();
 });
@@ -46,7 +46,7 @@ app.get('/about', (req, res) => {
 
 app.get('/weather', (req, res) => {
     if (!req.query.address)
-        return res.send({error: 'нужен адрес!'});
+        return res.send({error: 'Address is required.'});
 
     geocode(req.query.address, (errorMessage, results) => {
         if (errorMessage)
@@ -67,5 +67,5 @@ app.get('/weather', (req, res) => {
 });
 
 app.listen(port, () => {
-    console.log(`Серв на ${port} порту!!!!!!!11`);
+    console.log(`Server is running on port ${port}`);
 });
